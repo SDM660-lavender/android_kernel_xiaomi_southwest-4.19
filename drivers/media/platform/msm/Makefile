@@ -13,6 +13,8 @@ obj-$(CONFIG_TSPP) += broadcast/
 obj-$(CONFIG_DVB_MPQ) += dvb/
 ifdef CONFIG_MACH_XIAOMI_WHYRED
 obj-$(CONFIG_MSMB_CAMERA) += camera_v2-whyred/
+elseif ($(CONFIG_MSMB_CAMERA_OSS),y)
+obj-$(CONFIG_MSMB_CAMERA) += camera_v2-oss/
 else
 obj-$(CONFIG_MSMB_CAMERA) += camera_v2/
 endif
