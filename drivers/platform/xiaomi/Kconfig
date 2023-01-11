@@ -68,5 +68,11 @@ menu "Xiaomi board selection"
 		depends on MACH_XIAOMI_SDM660
 		help
 		  Support for new camera blobs
+	
+	config XIAOMI_QCAM
+		bool "Xiaomi lavender qcam blobs"
+		depends on MACH_LONGCHEER
+		help
+		  Support for lavender qcam blobs
 
 endmenu

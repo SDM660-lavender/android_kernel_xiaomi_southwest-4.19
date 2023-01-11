@@ -21,7 +21,7 @@
 #include <linux/of_device.h>
 #include <linux/of.h>
 
-#ifdef CONFIG_MACH_LONGCHEER
+#if defined(CONFIG_MACH_LONGCHEER) && !defined(CONFIG_XIAOMI_QCAM)
 enum __camera_vendor_module_id {
 	MID_NULL = 0,
 	MID_SUNNY,

@@ -19,7 +19,7 @@
 #include "msm_cci.h"
 #include "msm_camera_dt_util.h"
 #include "msm_sensor_driver.h"
-#ifdef CONFIG_MACH_LONGCHEER
+#if defined(CONFIG_MACH_LONGCHEER) && !defined(CONFIG_XIAOMI_QCAM)
 #include <soc/qcom/camera2.h>
 extern struct vendor_eeprom s_vendor_eeprom[CAMERA_VENDOR_EEPROM_COUNT_MAX];
 #endif
@@ -243,10 +243,20 @@ static int32_t msm_sensor_fill_eeprom_subdevid_by_name(
 			strcmp(eeprom_name, s_ctrl->sensordata->eeprom_name))
 			continue;
 #ifdef CONFIG_MACH_LONGCHEER
-		if (userspace_probe) {
+#ifdef CONFIG_XIAOMI_QCAM
+		if (userspace_probe == 1)
+#else
+		if (userspace_probe)
+#endif
+		{
 			rc = of_property_read_string(src_node,
 					"qcom,lct_eeprom-name", &lct_eeprom_name);
-			if (rc >= 0) {
+#ifdef CONFIG_XIAOMI_QCAM
+			if (rc < 0)
+#else
+			if (rc >= 0)
+#endif
+			{
 				if (strcmp(s_ctrl->sensordata->eeprom_name,
 						lct_eeprom_name)) {
 					rc = 0;
@@ -792,9 +802,11 @@ void msm_sensor_set_module_info(struct msm_sensor_ctrl_t *s_ctrl)
 		case FRONT_CAMERA_B:
 			strcat(module_info, "front: ");
 			break;
+#ifndef CONFIG_XIAOMI_QCAM
 		case FRONT_AUX_CAMERA_B:
 			strcat(module_info, "front_aux: ");
 			break;
+#endif
 		default:
 			strcat(module_info, "unknown: ");
 			break;
@@ -820,7 +832,11 @@ int32_t msm_sensor_init_device_name(void)
 {
 	int32_t rc = 0;
 
+#ifdef CONFIG_XIAOMI_QCAM
+	pr_err("%s %d\n", __func__,__LINE__);
+#else
 	CDBG("%s %d\n", __func__, __LINE__);
+#endif
 
 	if (msm_sensor_device != NULL) {
 		pr_err("Macle android_camera already created\n");
@@ -859,7 +875,11 @@ static uint16_t msm_sensor_get_sensor_id_ovti_13855(
 		sensor_i2c_client, 0x0100,
 		0x01, MSM_CAMERA_I2C_BYTE_DATA);
 	if (rc < 0) {
+#ifdef CONFIG_XIAOMI_QCAM
+		pr_err("%s:litao write 0x0100 failed\n", __func__);
+#else
 		pr_err("%s:lct write 0x0100 failed\n", __func__);
+#endif
 		return rc;
 	}
 
@@ -902,8 +922,12 @@ static uint16_t msm_sensor_get_sensor_id_ovti_13855(
 		sensor_i2c_client->i2c_func_tbl->i2c_read(
 			sensor_i2c_client, start_add,
 			&sensorid[i], MSM_CAMERA_I2C_WORD_DATA);
-		CDBG("%s:lct read from start_add %x sensrid[%d] %d\n", __func__,
-				start_add, i, sensorid[i]);
+#ifdef CONFIG_XIAOMI_QCAM
+		pr_err("%s:litao read from start_add %x sensrid[%d] %d\n",
+#else
+		CDBG("%s:lct read from start_add %x sensrid[%d] %d\n",
+#endif
+	__func__,start_add, i, sensorid[i]);
 		start_add += 1;
 	}
 
@@ -949,7 +973,11 @@ static uint16_t msm_sensor_get_sensor_id_sony_486(
 		0x01, MSM_CAMERA_I2C_WORD_DATA);
 	mdelay(1);
 	if (rc < 0) {
+#ifdef CONFIG_XIAOMI_QCAM
+		pr_err("%s:litao write 0x0100 failed\n", __func__);
+#else
 		pr_err("%s:lct write 0x0100 failed\n", __func__);
+#endif
 		return rc;
 	}
 
@@ -966,7 +994,11 @@ static uint16_t msm_sensor_get_sensor_id_sony_486(
 		rc = sensor_i2c_client->i2c_func_tbl->i2c_read(
 			sensor_i2c_client, start_add,
 			&sensorid[i], MSM_CAMERA_I2C_WORD_DATA);
+#ifdef CONFIG_XIAOMI_QCAM
+		pr_err("%s:litao++++++++++++ read from start_add %x sensrid[%d] %d\n",
+#else
 		CDBG("%s:lct++++++++++++ read from start_add %x sensrid[%d] %d\n",
+#endif
 				__func__, start_add, i, sensorid[i]);
 		start_add += 1;
 	}
@@ -1005,7 +1037,11 @@ static uint16_t msm_sensor_get_sensor_id_sony_376(
 		0x01, MSM_CAMERA_I2C_WORD_DATA);
 	mdelay(1);
 	if (rc < 0) {
+#ifdef CONFIG_XIAOMI_QCAM
+		pr_err("%s:litao write 0x0100 failed\n", __func__);	
+#else
 		pr_err("%s:lct write 0x0100 failed\n", __func__);
+#endif
 		return rc;
 	}
 
@@ -1022,7 +1058,11 @@ static uint16_t msm_sensor_get_sensor_id_sony_376(
 		rc = sensor_i2c_client->i2c_func_tbl->i2c_read(
 			sensor_i2c_client, start_add,
 			&sensorid[i], MSM_CAMERA_I2C_WORD_DATA);
+#ifdef CONFIG_XIAOMI_QCAM
+		pr_err("%s:litao++++++++++++ read from start_add %x sensrid[%d] %d\n",
+#else
 		CDBG("%s:lct++++++++++++ read from start_add %x sensrid[%d] %d\n",
+#endif
 				__func__, start_add, i, sensorid[i]);
 		start_add += 1;
 	}
@@ -1053,7 +1093,12 @@ static uint16_t msm_sensor_get_sensor_id_samsung_5e8(
 	uint32_t start_add = 0x0a04;
 	struct msm_camera_i2c_client *sensor_i2c_client;
 
+#ifdef CONFIG_XIAOMI_QCAM 
+	pr_err("%s:%d E \n", __func__, __LINE__);
+#else
 	CDBG("%s:%d E \n", __func__, __LINE__);
+#endif
+
 	sensor_i2c_client = s_ctrl->sensor_i2c_client;
 
 	rc = sensor_i2c_client->i2c_func_tbl->i2c_write(
@@ -1061,7 +1106,11 @@ static uint16_t msm_sensor_get_sensor_id_samsung_5e8(
 		0x00, MSM_CAMERA_I2C_BYTE_DATA);
 	mdelay(1);
 	if (rc < 0) {
+#ifdef CONFIG_XIAOMI_QCAM
+		pr_err("%s:litao write 0x0100 failed\n", __func__);
+#else
 		pr_err("%s:lct write 0x0100 failed\n", __func__);
+#endif
 		return rc;
 	}
 
@@ -1083,7 +1132,11 @@ static uint16_t msm_sensor_get_sensor_id_samsung_5e8(
 		sensor_i2c_client->i2c_func_tbl->i2c_read(
 			sensor_i2c_client, start_add,
 			&sensorid[i], MSM_CAMERA_I2C_WORD_DATA);
+#ifdef CONFIG_XIAOMI_QCAM
+		pr_err("%s:litao read from reg_add %x sensorid[%d] %d\n",
+#else
 		CDBG("%s:lct read from reg_add %x sensorid[%d] %d\n",
+#endif
 				__func__, start_add, i, sensorid[i]);
 		start_add += 1;
 	}
@@ -1118,7 +1171,11 @@ static uint16_t msm_sensor_get_sensor_id_samsung_2L7(
 	uint32_t start_add = 0x0A24;
 	struct msm_camera_i2c_client *sensor_i2c_client;
 
+#ifdef CONFIG_XIAOMI_QCAM
+	pr_err("%s:%d E \n", __func__, __LINE__);
+#else
 	CDBG("%s:%d E \n", __func__, __LINE__);
+#endif
 	sensor_i2c_client = s_ctrl->sensor_i2c_client;
 
 	rc = sensor_i2c_client->i2c_func_tbl->i2c_write(
@@ -1126,7 +1183,11 @@ static uint16_t msm_sensor_get_sensor_id_samsung_2L7(
 		0x0100, MSM_CAMERA_I2C_BYTE_DATA);
 	mdelay(1);
 	if (rc < 0) {
+#ifdef CONFIG_XIAOMI_QCAM
+		pr_err("%s:litao write 0x0100 failed\n", __func__);
+#else
 		pr_err("%s:lct write 0x0100 failed\n", __func__);
+#endif
 		return rc;
 	}
 
@@ -1143,7 +1204,11 @@ static uint16_t msm_sensor_get_sensor_id_samsung_2L7(
 		rc = sensor_i2c_client->i2c_func_tbl->i2c_read(
 			sensor_i2c_client, start_add,
 			&sensorid[i], MSM_CAMERA_I2C_WORD_DATA);
+#ifdef CONFIG_XIAOMI_QCAM
+		pr_err("%s:litao read from start_add %x sensrid[%d] %d\n",
+#else
 		CDBG("%s:lct read from start_add %x sensrid[%d] %d\n",
+#endif
 				__func__, start_add, i, sensorid[i]);
 		start_add += 1;
 	}
@@ -1252,7 +1317,11 @@ void msm_sensor_set_sensor_id(struct msm_sensor_ctrl_t *s_ctrl)
 {
 	char sensor_fusion_id_tmp[90] = {0};
 	int rc = 0;
+#ifdef CONFIG_XIAOMI_QCAM
+	pr_err("litao s_ctrl->sensordata->camera_type = %d\n",
+#else
 	CDBG("lct s_ctrl->sensordata->camera_type = %d\n",
+#endif
 			s_ctrl->sensordata->sensor_info->position);
 
 	switch (s_ctrl->sensordata->sensor_info->position) {
@@ -1267,9 +1336,11 @@ void msm_sensor_set_sensor_id(struct msm_sensor_ctrl_t *s_ctrl)
 		case FRONT_CAMERA_B:
 			strcat(sensor_fusion_id, "front: ");
 			break;
+#ifndef CONFIG_XIAOMI_QCAM
 		case FRONT_AUX_CAMERA_B:
 			strcat(sensor_fusion_id, "front_aux: ");
 			break;
+#endif
 		default:
 #ifndef CONFIG_MACH_XIAOMI_TULIP
 			strcat(sensor_fusion_id, "unknow: ");
@@ -1283,7 +1354,11 @@ void msm_sensor_set_sensor_id(struct msm_sensor_ctrl_t *s_ctrl)
 	    (!strcmp("wayne_imx486_ofilm_ii", s_ctrl->sensordata->sensor_name))) {
 		rc = msm_sensor_get_sensor_id_sony_486(s_ctrl, sensor_fusion_id_tmp);
 		if (rc < 0) {
+#ifdef CONFIG_XIAOMI_QCAM
+			pr_err("%s:%d litao read sensor %s fusion id failed\n",
+#else
 			pr_err("%s:%d lct read sensor %s fusion id failed\n",
+#endif
 					__func__, __LINE__,
 					s_ctrl->sensordata->sensor_name);
 		}
@@ -1296,7 +1371,11 @@ void msm_sensor_set_sensor_id(struct msm_sensor_ctrl_t *s_ctrl)
 	    (!strcmp("wayne_imx376_ofilm_front_ii", s_ctrl->sensordata->sensor_name))) {
 		rc = msm_sensor_get_sensor_id_sony_376(s_ctrl, sensor_fusion_id_tmp);
 		if (rc < 0) {
+#ifdef CONFIG_XIAOMI_QCAM
+			pr_err("%s:%d litao read sensor %s fusion id failed\n",
+#else
 			pr_err("%s:%d lct read sensor %s fusion id failed\n",
+#endif
 					__func__, __LINE__,
 					s_ctrl->sensordata->sensor_name);
 		}
@@ -1310,7 +1389,11 @@ void msm_sensor_set_sensor_id(struct msm_sensor_ctrl_t *s_ctrl)
 	  ) {
 		rc = msm_sensor_get_sensor_id_samsung_5e8(s_ctrl, sensor_fusion_id_tmp);
 		if (rc < 0) {
+#ifdef CONFIG_XIAOMI_QCAM
+			pr_err("%s:%d litao read sensor %s fusion id failed\n",
+#else
 			pr_err("%s:%d lct read sensor %s fusion id failed\n",
+#endif
 					__func__, __LINE__,
 					s_ctrl->sensordata->sensor_name);
 		}
@@ -1319,7 +1402,11 @@ void msm_sensor_set_sensor_id(struct msm_sensor_ctrl_t *s_ctrl)
 	    (!strcmp("whyred_s5k2l7_qtech_cn_ii", s_ctrl->sensordata->sensor_name))) {
 		rc = msm_sensor_get_sensor_id_samsung_2L7(s_ctrl, sensor_fusion_id_tmp);
 		if (rc < 0) {
+#ifdef CONFIG_XIAOMI_QCAM
+			pr_err("%s:%d litao read sensor %s fusion id failed\n",
+#else
 			pr_err("%s:%d lct read sensor %s fusion id failed\n",
+#endif
 					__func__, __LINE__,
 					s_ctrl->sensordata->sensor_name);
 		}
@@ -1338,13 +1425,21 @@ void msm_sensor_set_sensor_id(struct msm_sensor_ctrl_t *s_ctrl)
 	if (!strcmp("whyred_ov13855_sunny_cn_i", s_ctrl->sensordata->sensor_name)) {
 		rc = msm_sensor_get_sensor_id_ovti_13855(s_ctrl,sensor_fusion_id_tmp);
 		if (rc < 0){
+#ifdef CONFIG_XIAOMI_QCAM
+			pr_err("%s:%d litao read sensor %s fusion id failed\n",
+#else
 			pr_err("%s:%d lct read sensor %s fusion id failed\n",
+#endif
 					__func__, __LINE__,
 					s_ctrl->sensordata->sensor_name);
 		}
 	}
 
+#ifdef CONFIG_XIAOMI_QCAM
+	pr_err("%s:%d litao read sensor fusion id %s\n", __func__, __LINE__,
+#else
 	CDBG("%s:%d lct read sensor fusion id %s\n", __func__, __LINE__,
+#endif
 			sensor_fusion_id_tmp);
 #ifdef CONFIG_MACH_XIAOMI_TULIP
 	if (s_ctrl->sensordata->sensor_info->position != BACK_CAMERA_B) {
@@ -1378,7 +1473,11 @@ int32_t msm_sensorid_init_device_name(void)
 {
 	int32_t rc = 0;
 
+#ifdef CONFIG_XIAOMI_QCAM
+	pr_err("%s %d\n", __func__,__LINE__);
+#else
 	CDBG("%s %d\n", __func__,__LINE__);
+#endif
 
 	if (msm_sensorid_device != NULL) {
 		pr_err("Macle android_camera already created\n");
@@ -1413,7 +1512,7 @@ int32_t msm_sensor_driver_probe(void *setting,
 	unsigned long                        mount_pos = 0;
 	uint32_t                             is_yuv;
 
-#if defined(CONFIG_MACH_XIAOMI_LAVENDER) || defined(CONFIG_MACH_XIAOMI_TULIP) || defined(CONFIG_MACH_XIAOMI_WHYRED)
+#if defined(CONFIG_MACH_XIAOMI_LAVENDER) || defined(CONFIG_MACH_XIAOMI_TULIP) || defined(CONFIG_MACH_XIAOMI_WHYRED) && !defined(CONFIG_XIAOMI_QCAM)
 	uint32_t                             i = 0;
 #endif
 
@@ -1524,7 +1623,7 @@ int32_t msm_sensor_driver_probe(void *setting,
 		goto free_slave_info;
 	}
 
-#ifdef CONFIG_MACH_XIAOMI_LAVENDER
+#if defined(CONFIG_MACH_XIAOMI_LAVENDER) && !defined(CONFIG_XIAOMI_QCAM)
 	if ((strcmp(slave_info->eeprom_name, "lavender_s5k5e8_ofilm_i") == 0) ||
 	    (strcmp(slave_info->eeprom_name, "lavender_s5k5e8_sunny_ii") == 0) ||
 	    (strcmp(slave_info->eeprom_name, "lavender_ov02a10_ofilm_i") == 0) ||
@@ -1672,13 +1771,19 @@ int32_t msm_sensor_driver_probe(void *setting,
 		if (slave_info->sensor_id_info.sensor_id ==
 			s_ctrl->sensordata->cam_slave_info->
 				sensor_id_info.sensor_id &&
-#ifdef CONFIG_MACH_XIAOMI_SDM660
+#if defined(CONFIG_MACH_XIAOMI_SDM660) && !defined(CONFIG_XIAOMI_QCAM)
 			slave_info->vendor_id_info.vendor_id ==
 			s_ctrl->sensordata->cam_slave_info->
 				vendor_id_info.vendor_id &&
 #endif
 			!(strcmp(slave_info->sensor_name,
-			s_ctrl->sensordata->cam_slave_info->sensor_name))) {
+			s_ctrl->sensordata->cam_slave_info->sensor_name))
+#ifdef CONFIG_XIAOMI_QCAM
+			&&
+			(slave_info->vendor_id_info.vendor_id ==
+			s_ctrl->sensordata->cam_slave_info->vendor_id_info.vendor_id)
+#endif
+		) {
 			pr_err("slot%d: sensor name: %s sensor id%d already probed\n",
 				slave_info->camera_id,
 				slave_info->sensor_name,

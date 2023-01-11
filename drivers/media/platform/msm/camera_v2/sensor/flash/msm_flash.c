@@ -1077,7 +1077,7 @@ static int32_t msm_flash_get_pmic_source_info(
 				continue;
 			}
 
-#ifdef CONFIG_MACH_XIAOMI_LAVENDER
+#if defined(CONFIG_MACH_XIAOMI_LAVENDER) && !defined(CONFIG_XIAOMI_QCAM)
 			if (fctrl->torch_max_current[i] < 1000)
 				fctrl->torch_max_current[i] = 1000;
 #endif

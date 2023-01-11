@@ -4142,7 +4142,7 @@ int msm_isp_update_axi_stream(struct vfe_device *vfe_dev, void *arg)
 			UPDATE_STREAM_REQUEST_FRAMES &&
 			update_cmd->update_type !=
 			UPDATE_STREAM_REMOVE_BUFQ &&
-#ifdef CONFIG_MACH_LONGCHEER
+#if defined(CONFIG_MACH_LONGCHEER) && !defined(CONFIG_XIAOMI_QCAM)
 			update_cmd->update_type !=
 			UPDATE_STREAM_REQUEST_FRAMES_VER2 &&
 #endif

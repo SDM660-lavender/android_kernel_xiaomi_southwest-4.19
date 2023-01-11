@@ -465,14 +465,27 @@ int msm_sensor_match_vendor_id(struct msm_sensor_ctrl_t *s_ctrl)
 		return rc;
 	}
 	if (s_ctrl->sensordata->vendor_id_info->vendor_id != vendorid) {
+#ifdef CONFIG_XIAOMI_QCAM
+		pr_err("%s:match vendor if failed read vendor id: 0x%x expected id 0x%x:\n",
+			__func__, vendorid, s_ctrl->sensordata->vendor_id_info->vendor_id);
+		rc = -1;
+		return rc;
+#else
 		pr_err("%s:%s match vendor id failed read vendor id:0x%x expected id 0x%x eeprom_slave_addr 0x%x vendor_id_addr 0x%x\n",
 			__func__, s_ctrl->sensordata->sensor_name,vendorid, s_ctrl->sensordata->vendor_id_info->vendor_id,
 		s_ctrl->sensordata->vendor_id_info->eeprom_slave_addr,
 		s_ctrl->sensordata->vendor_id_info->vendor_id_addr);
 		rc = -1;
+#endif
+
 #ifdef CONFIG_MACH_LONGCHEER
 	} else {
-		if (have_vcmid) {
+#ifdef CONFIG_XIAOMI_QCAM
+		if (have_vcmid == 1)
+#else
+		if (have_vcmid)
+#endif
+		{
 			if (s_ctrl->sensordata->vcm_id_info->vcm_id != vcmid) {
 				pr_err("%s:match vcmid if failed read vcm id: 0x%x expected id 0x%x:\n",
 					__func__, vcmid, s_ctrl->sensordata->vcm_id_info->vcm_id);

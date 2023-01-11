@@ -27,7 +27,7 @@ DEFINE_MSM_MUTEX(msm_eeprom_mutex);
 static struct v4l2_file_operations msm_eeprom_v4l2_subdev_fops;
 #endif
 
-#ifdef CONFIG_MACH_LONGCHEER
+#if defined(CONFIG_MACH_LONGCHEER) && !defined(CONFIG_XIAOMI_QCAM)
 struct vendor_eeprom s_vendor_eeprom[CAMERA_VENDOR_EEPROM_COUNT_MAX];
 #ifdef CONFIG_MACH_XIAOMI_TULIP
 extern char sensor_fusion_id[512];
@@ -1747,7 +1747,7 @@ static long msm_eeprom_subdev_fops_ioctl32(struct file *file, unsigned int cmd,
 
 #endif
 
-#ifdef CONFIG_MACH_LONGCHEER
+#if defined(CONFIG_MACH_LONGCHEER) && !defined(CONFIG_XIAOMI_QCAM)
 #ifdef CONFIG_MACH_XIAOMI_LAVENDER
 static camera_vendor_module_id lavender_s5k5e8_ofilm_i_get_otp_vendor_module_id
 	(struct msm_eeprom_ctrl_t *e_ctrl)
@@ -2088,7 +2088,7 @@ static uint8_t get_otp_vendor_module_id(struct msm_eeprom_ctrl_t *e_ctrl, const 
 {
 	camera_vendor_module_id module_id = MID_NULL;
 
-#ifdef CONFIG_MACH_XIAOMI_LAVENDER
+#if defined(CONFIG_MACH_XIAOMI_LAVENDER) && !defined(CONFIG_XIAOMI_QCAM)
 	if (strcmp(eeprom_name, "lavender_s5k5e8_ofilm_i") == 0)
 		module_id = lavender_s5k5e8_ofilm_i_get_otp_vendor_module_id(e_ctrl);
 	else if (strcmp(eeprom_name, "lavender_s5k5e8_sunny_ii") == 0)
@@ -2274,7 +2274,7 @@ static int msm_eeprom_platform_probe(struct platform_device *pdev)
 			CDBG("memory_data[%d] = 0x%X\n", j,
 				e_ctrl->cal_data.mapdata[j]);
 
-#ifdef CONFIG_MACH_LONGCHEER
+#if defined(CONFIG_MACH_LONGCHEER) && !defined(CONFIG_XIAOMI_QCAM)
 		if (eb_info->eeprom_name != NULL) {
 			s_vendor_eeprom[pdev->id].module_id = get_otp_vendor_module_id(e_ctrl, eb_info->eeprom_name);
 			strcpy(s_vendor_eeprom[pdev->id].eeprom_name, eb_info->eeprom_name);
